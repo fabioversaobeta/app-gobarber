@@ -12,6 +12,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  // eslint-disable-next-line camelcase
   avatar_url: string;
 }
 
@@ -30,6 +31,7 @@ interface AuthContextData {
   loading: boolean;
   signIn(credentials: SignInCredentials): Promise<void>;
   signOut(): void;
+  updateUser(user: User): Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -81,6 +83,18 @@ const AuthProvider: React.FC = ({ children }) => {
     setData({} as AuthState);
   }, []);
 
+  const updateUser = useCallback(
+    async (user: User) => {
+      await AsyncStorage.setItem('@GoBarber:user', JSON.stringify(user));
+
+      setData({
+        token: data.token,
+        user,
+      });
+    },
+    [setData, data.token],
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -88,6 +102,7 @@ const AuthProvider: React.FC = ({ children }) => {
         loading,
         signIn,
         signOut,
+        updateUser,
       }}
     >
       {children}
